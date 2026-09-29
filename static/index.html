@@ -1,0 +1,1789 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>个人健康运动管理平台</title>
+  <link rel="stylesheet" href="/static/vendor/element-plus.css">
+  <style>
+    :root {
+      --primary: #10b981;
+      --primary-dark: #059669;
+      --secondary: #3b82f6;
+      --admin-color: #6366f1;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* 顶栏 */
+    .app-header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+    }
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 16px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .brand-area {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .brand-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #065f46;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .brand-badge {
+      font-size: 11px;
+      background: #ecfdf5;
+      color: var(--primary-dark);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .header-user-tag {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* 容器 */
+    .main-container {
+      max-width: 1400px;
+      margin: 16px auto;
+      padding: 0 16px;
+    }
+    .content-box {
+      background: var(--card);
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    /* 能量天平横幅 */
+    .balance-banner {
+      background: linear-gradient(135deg, #065f46 0%, #059669 50%, #10b981 100%);
+      color: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .admin-banner {
+      background: linear-gradient(135deg, #312e81 0%, #4338ca 50%, #6366f1 100%);
+      color: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .balance-stats-group {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .balance-stat-item {
+      display: flex;
+      flex-direction: column;
+    }
+    .balance-stat-label {
+      font-size: 12px;
+      opacity: 0.85;
+    }
+    .balance-stat-val {
+      font-size: 26px;
+      font-weight: 800;
+      margin-top: 2px;
+    }
+
+    /* 指标小卡片 */
+    .metric-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s;
+    }
+    .metric-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border-color: #cbd5e1;
+    }
+    .metric-title {
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .metric-val {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 8px 0;
+    }
+    .metric-sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* 柱状图容器 */
+    .trend-chart-box {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      height: 160px;
+      padding-top: 20px;
+      overflow-x: auto;
+    }
+    .trend-col {
+      flex: 1;
+      min-width: 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      justify-content: flex-end;
+    }
+    .bar-burn {
+      width: 14px;
+      background: #10b981;
+      border-radius: 4px 4px 0 0;
+      transition: height 0.3s;
+    }
+    .bar-intake {
+      width: 14px;
+      background: #3b82f6;
+      border-radius: 4px 4px 0 0;
+      transition: height 0.3s;
+    }
+    .bars-wrap {
+      display: flex;
+      gap: 3px;
+      align-items: flex-end;
+      height: 120px;
+    }
+    .col-date {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 6px;
+      white-space: nowrap;
+    }
+
+    /* 目标卡片 */
+    .goal-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      background: #ffffff;
+      margin-bottom: 12px;
+      transition: border-color 0.2s;
+    }
+    .goal-card:hover {
+      border-color: #94a3b8;
+    }
+
+    /* 表格响应式外壳 */
+    .table-responsive-box {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* 方案规格卡片 */
+    .spec-section {
+      background: #f8fafc;
+      border-left: 4px solid var(--primary-dark);
+      padding: 14px 16px;
+      border-radius: 4px;
+      margin-bottom: 14px;
+    }
+
+    /* 弹窗与提示优化 */
+    .el-message {
+      top: 12px !important;
+      z-index: 9999 !important;
+    }
+
+    /* 移动端特别优化 (< 768px) */
+    @media (max-width: 768px) {
+      .header-content {
+        padding: 0 10px;
+        height: 52px;
+      }
+      .brand-title {
+        font-size: 15px;
+        font-weight: 700;
+      }
+      .brand-badge {
+        display: none;
+      }
+      .header-user-btn {
+        max-width: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding: 4px 8px !important;
+        font-size: 12px !important;
+      }
+      .balance-banner, .admin-banner {
+        padding: 14px;
+      }
+      .balance-stats-group {
+        gap: 12px;
+      }
+      .balance-stat-val {
+        font-size: 20px;
+      }
+      .metric-card {
+        padding: 10px;
+      }
+      .metric-val {
+        font-size: 18px;
+        margin: 4px 0;
+      }
+      .metric-title {
+        font-size: 12px;
+      }
+      .metric-sub {
+        font-size: 11px;
+      }
+      .header-bmi-badge {
+        display: none;
+      }
+      .main-container {
+        padding: 0 8px;
+        margin: 10px auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- 顶栏 -->
+    <header class="app-header">
+      <div class="header-content">
+        <div class="brand-area">
+          <span style="font-size: 22px;">🏃</span>
+          <span class="brand-title">个人健康运动管理平台</span>
+          <span class="brand-badge" v-if="currentUser.role === 'ADMIN'">管理员后台</span>
+          <span class="brand-badge" v-else>用户端</span>
+        </div>
+
+        <div class="header-user-tag">
+          <!-- 身份指示 -->
+          <el-tag v-if="currentUser.role === 'ADMIN'" size="small" type="danger" effect="dark">
+            系统管理员
+          </el-tag>
+          <el-tag v-else size="small" type="success" effect="light" class="header-bmi-badge">
+            BMI: {{ currentUser.bmi || '--' }} ({{ currentUser.bmi_text || '健康' }})
+          </el-tag>
+
+          <!-- 身份切换下拉菜单 (方便答辩演示与全端秒切) -->
+          <el-dropdown @command="handleUserSwitch">
+            <el-button size="small" type="primary" plain class="header-user-btn">
+              {{ currentUser.role === 'ADMIN' ? '管理员' : (currentUser.real_name ? currentUser.real_name.split(' ')[0] : currentUser.username) }} <el-icon style="margin-left: 2px;"><arrow-down /></el-icon>
+            </el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="user_alex">👤 切换到：张健 (健身学员 - 前台)</el-dropdown-item>
+                <el-dropdown-item command="user_lisa">👤 切换到：李悦 (减脂打卡 - 前台)</el-dropdown-item>
+                <el-dropdown-item command="admin" divided>🛡️ 切换到：系统管理员 (后台)</el-dropdown-item>
+                <el-dropdown-item command="dialog_login" divided>🔑 账号密码登录 / 注册</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </div>
+      </div>
+    </header>
+
+    <!-- 主容器 -->
+    <main class="main-container">
+
+      <!-- ================= 模式 A：系统管理员后台界面 ================= -->
+      <div v-if="currentUser.role === 'ADMIN'">
+        <!-- 管理员大盘横幅 -->
+        <div class="admin-banner">
+          <div>
+            <div style="font-size: 13px; opacity: 0.9;">全平台系统监管与运维</div>
+            <div style="font-size: 22px; font-weight: 800; margin-top: 4px;">管理员工作台 (Admin Panel)</div>
+            <div style="font-size: 12px; opacity: 0.8; margin-top: 4px;">
+              基于 MySQL 关系型数据库底层，监管全站健康数据流水、用户信息与系统公告
+            </div>
+          </div>
+          <div class="balance-stats-group">
+            <div class="balance-stat-item">
+              <span class="balance-stat-label">注册用户</span>
+              <span class="balance-stat-val">{{ adminOverview.total_users || 0 }} 人</span>
+            </div>
+            <div class="balance-stat-item">
+              <span class="balance-stat-label">全站运动打卡</span>
+              <span class="balance-stat-val">{{ adminOverview.total_workouts || 0 }} 次</span>
+            </div>
+            <div class="balance-stat-item">
+              <span class="balance-stat-label">全站消耗热量</span>
+              <span class="balance-stat-val">{{ adminOverview.total_calories_burned || 0 }} kcal</span>
+            </div>
+            <div class="balance-stat-item">
+              <span class="balance-stat-label">系统公告数</span>
+              <span class="balance-stat-val">{{ adminOverview.total_notices || 0 }} 篇</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 管理员多标签工作台 -->
+        <div class="content-box">
+          <el-tabs v-model="adminActiveTab" style="padding: 12px 16px;">
+            
+            <!-- 1. 用户档案管理 -->
+            <el-tab-pane label="👥 用户信息管理" name="users">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 10px; flex-wrap: wrap;">
+                <div style="display: flex; gap: 8px;">
+                  <el-input v-model="adminUserKeyword" placeholder="搜索用户名 / 真实姓名 / 手机号" clearable style="width: 260px;" @keyup.enter="fetchAdminUsers" />
+                  <el-button type="primary" @click="fetchAdminUsers">查询</el-button>
+                </div>
+                <el-button type="success" @click="showAddUserModal = true">+ 新增用户</el-button>
+              </div>
+
+              <div class="table-responsive-box">
+                <el-table :data="adminUsers" stripe border style="width: 100%" v-loading="loadingAdminUsers">
+                  <el-table-column prop="id" label="ID" width="70" align="center"></el-table-column>
+                  <el-table-column prop="username" label="用户名" width="120"></el-table-column>
+                  <el-table-column prop="real_name" label="姓名" width="140"></el-table-column>
+                  <el-table-column prop="role" label="角色" width="100" align="center">
+                    <template #default="scope">
+                      <el-tag :type="scope.row.role === 'ADMIN' ? 'danger' : 'info'" size="small">
+                        {{ scope.row.role === 'ADMIN' ? '管理员' : '普通用户' }}
+                      </el-tag>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="gender" label="性别" width="70" align="center"></el-table-column>
+                  <el-table-column prop="age" label="年龄" width="70" align="center"></el-table-column>
+                  <el-table-column label="身高 / 体重" width="140" align="center">
+                    <template #default="scope">
+                      {{ scope.row.height }}cm / {{ scope.row.weight }}kg
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="phone" label="手机号码" width="130"></el-table-column>
+                  <el-table-column prop="status" label="账号状态" width="100" align="center">
+                    <template #default="scope">
+                      <el-switch 
+                        :model-value="scope.row.status === 1" 
+                        :disabled="scope.row.role === 'ADMIN'"
+                        @change="(val) => handleToggleUserStatus(scope.row, val)" 
+                        active-text="正常" 
+                        inactive-text="禁用" 
+                        inline-prompt
+                      />
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="created_at" label="注册时间" width="160"></el-table-column>
+                  <el-table-column label="管理操作" min-width="120" align="center">
+                    <template #default="scope">
+                      <el-button 
+                        v-if="scope.row.role !== 'ADMIN'" 
+                        type="danger" 
+                        size="small" 
+                        plain 
+                        @click="handleDeleteUser(scope.row.id)"
+                      >删除</el-button>
+                      <span v-else style="font-size: 12px; color: var(--muted);">超管不可删</span>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+            </el-tab-pane>
+
+            <!-- 2. 全站运动打卡监管 -->
+            <el-tab-pane label="🏃 运动数据监管" name="workouts">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <div style="font-size: 14px; color: var(--muted);">全平台各用户上传的运动打卡记录流水：</div>
+                <el-button size="small" @click="fetchAdminWorkouts">刷新流水</el-button>
+              </div>
+              <div class="table-responsive-box">
+                <el-table :data="adminWorkouts" stripe border style="width: 100%" v-loading="loadingAdminWorkouts">
+                  <el-table-column prop="id" label="流水ID" width="80" align="center"></el-table-column>
+                  <el-table-column prop="real_name" label="打卡用户" width="140">
+                    <template #default="scope">
+                      {{ scope.row.real_name }} ({{ scope.row.username }})
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="workout_date" label="运动日期" width="120" align="center"></el-table-column>
+                  <el-table-column prop="sport_name" label="运动项目" width="130">
+                    <template #default="scope">
+                      <el-tag size="small" type="success">{{ scope.row.sport_name }}</el-tag>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="duration_min" label="时长(分)" width="100" align="center"></el-table-column>
+                  <el-table-column prop="calories_burned" label="消耗(kcal)" width="110" align="center"></el-table-column>
+                  <el-table-column prop="distance_km" label="里程(km)" width="100" align="center"></el-table-column>
+                  <el-table-column prop="notes" label="心得备注" min-width="180" show-overflow-tooltip></el-table-column>
+                  <el-table-column label="操作" width="90" align="center">
+                    <template #default="scope">
+                      <el-button type="danger" size="small" text @click="handleDeleteAdminWorkout(scope.row.id)">删除</el-button>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+            </el-tab-pane>
+
+            <!-- 3. 公告信息发布与管理 -->
+            <el-tab-pane label="📢 公告发布管理" name="notices">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <span style="font-size: 14px; font-weight: 600;">系统科普与公告列表</span>
+                <el-button type="primary" size="small" @click="showAddNoticeModal = true">+ 发布新公告</el-button>
+              </div>
+              <div class="table-responsive-box">
+                <el-table :data="adminNotices" stripe border style="width: 100%">
+                  <el-table-column prop="id" label="ID" width="70" align="center"></el-table-column>
+                  <el-table-column prop="tag" label="分类标签" width="110" align="center">
+                    <template #default="scope">
+                      <el-tag size="small">{{ scope.row.tag }}</el-tag>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="title" label="公告标题" min-width="220"></el-table-column>
+                  <el-table-column prop="author" label="发布人" width="120" align="center"></el-table-column>
+                  <el-table-column prop="created_at" label="发布时间" width="160" align="center"></el-table-column>
+                  <el-table-column label="操作" width="90" align="center">
+                    <template #default="scope">
+                      <el-button type="danger" size="small" text @click="handleDeleteAdminNotice(scope.row.id)">删除</el-button>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+            </el-tab-pane>
+
+            <!-- 4. 运动字典基础数据维护 -->
+            <el-tab-pane label="⚙️ 运动基础字典维护" name="sports">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <span style="font-size: 14px; font-weight: 600;">运动类型与热量系数参数字典</span>
+                <el-button type="primary" size="small" @click="showAddSportModal = true">+ 新增运动字典项</el-button>
+              </div>
+              <div class="table-responsive-box">
+                <el-table :data="sportsDict" stripe border style="width: 100%">
+                  <el-table-column prop="id" label="ID" width="70" align="center"></el-table-column>
+                  <el-table-column prop="name" label="运动名称" width="160"></el-table-column>
+                  <el-table-column prop="category" label="运动大类" width="140" align="center">
+                    <template #default="scope">
+                      <el-tag size="small" type="info">{{ scope.row.category }}</el-tag>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="cal_per_min" label="参考消耗 (kcal/分钟)" width="200" align="center"></el-table-column>
+                  <el-table-column label="操作" min-width="100" align="center">
+                    <template #default="scope">
+                      <el-button type="danger" size="small" text @click="handleDeleteAdminSport(scope.row.id)">删除</el-button>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+            </el-tab-pane>
+
+            <!-- 5. 论文任务书技术规范 -->
+            <el-tab-pane label="📑 毕设任务书与架构对齐" name="spec">
+              <div class="spec-section">
+                <h3 style="color: #065f46; margin-bottom: 8px;">🎓 毕业设计（论文）任务书核心指标与实现对照</h3>
+                <div style="font-size: 13px; line-height: 1.8; color: #334155;">
+                  <div><b>题目</b>：个人健康运动管理平台的设计与实现</div>
+                  <div><b>技术栈要求</b>：前后端分离架构，前端使用 Vue + ElementUI，后端采用 RESTful API（SpringBoot 契约兼容），数据库采用 <b>MySQL</b> 关系型数据库。</div>
+                  <div><b>数据库架构</b>：已在 MySQL 中规范设计并运行 <code>sys_user</code>（用户与角色）、<code>body_metrics</code>（身体指标历史）、<code>workout_record</code>（运动记录）、<code>diet_record</code>（饮食分餐记录）、<code>exercise_plan</code>（运动计划与打卡）、<code>system_notice</code>（系统公告）、<code>sport_dict</code>（基础运动字典）共 7 张核心表。</div>
+                  <div><b>权限隔离</b>：前台普通用户仅可读写自身健康与运动数据；后台管理员具备全站用户状态启禁、运动打卡监管、公告科普推送与数据字典维护能力。</div>
+                </div>
+              </div>
+            </el-tab-pane>
+
+          </el-tabs>
+        </div>
+      </div>
+
+      <!-- ================= 模式 B：普通用户前台界面 ================= -->
+      <div v-else>
+        <!-- 能量天平横幅 -->
+        <div class="balance-banner">
+          <div>
+            <div style="font-size: 13px; opacity: 0.9;">今日能量天平</div>
+            <div style="font-size: 24px; font-weight: 800; margin-top: 4px;">
+              {{ userDashboard.net_calories < 0 ? '热量赤字 ' + Math.abs(userDashboard.net_calories) + ' kcal (减脂中)' : '热量结余 ' + userDashboard.net_calories + ' kcal' }}
+            </div>
+            <div style="font-size: 12px; opacity: 0.8; margin-top: 4px;">
+              净卡路里差 = 今日摄入 ({{ userDashboard.today_intake || 0 }} kcal) - 运动消耗 ({{ userDashboard.today_burned || 0 }} kcal)
+            </div>
+          </div>
+          <div class="balance-stats-group">
+            <div class="balance-stat-item">
+              <span class="balance-stat-label">今日运动消耗</span>
+              <span class="balance-stat-val">{{ userDashboard.today_burned || 0 }} kcal</span>
+            </div>
+            <div class="balance-stat-item">
+              <span class="balance-stat-label">今日运动时长</span>
+              <span class="balance-stat-val">{{ userDashboard.today_duration || 0 }} 分钟</span>
+            </div>
+            <div class="balance-stat-item">
+              <span class="balance-stat-label">今日饮食摄入</span>
+              <span class="balance-stat-val">{{ userDashboard.today_intake || 0 }} kcal</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 项身体关键指标卡片 -->
+        <el-row :gutter="12" style="margin-bottom: 16px;">
+          <el-col :xs="12" :sm="6" style="margin-bottom: 8px;">
+            <div class="metric-card">
+              <div class="metric-title">
+                <span>当前体重</span>
+                <el-tag size="small" type="primary">目标 {{ currentUser.target_weight || 65 }}kg</el-tag>
+              </div>
+              <div class="metric-val">{{ currentUser.weight }} <span style="font-size: 14px; font-weight: 400;">kg</span></div>
+              <div class="metric-sub">身高: {{ currentUser.height }}cm</div>
+            </div>
+          </el-col>
+          <el-col :xs="12" :sm="6" style="margin-bottom: 8px;">
+            <div class="metric-card">
+              <div class="metric-title">
+                <span>BMI 身体质量</span>
+                <el-tag size="small" :type="currentUser.bmi_color || 'success'">{{ currentUser.bmi_text || '正常' }}</el-tag>
+              </div>
+              <div class="metric-val">{{ currentUser.bmi }}</div>
+              <div class="metric-sub">标准区间: 18.5 ~ 23.9</div>
+            </div>
+          </el-col>
+          <el-col :xs="12" :sm="6" style="margin-bottom: 8px;">
+            <div class="metric-card">
+              <div class="metric-title">
+                <span>静息基础代谢</span>
+                <el-tag size="small" type="info">BMR</el-tag>
+              </div>
+              <div class="metric-val">{{ Math.round(10 * (currentUser.weight || 68) + 6.25 * (currentUser.height || 175) - 5 * (currentUser.age || 24) + 5) }} <span style="font-size: 14px; font-weight: 400;">kcal</span></div>
+              <div class="metric-sub">日常最低能量底线</div>
+            </div>
+          </el-col>
+          <el-col :xs="12" :sm="6" style="margin-bottom: 8px;">
+            <div class="metric-card">
+              <div class="metric-title">
+                <span>每日推荐饮水</span>
+                <el-tag size="small" type="success">水合状态</el-tag>
+              </div>
+              <div class="metric-val">{{ Math.round((currentUser.weight || 68) * 35) }} <span style="font-size: 14px; font-weight: 400;">ml</span></div>
+              <div class="metric-sub">按35ml/kg基准测算</div>
+            </div>
+          </el-col>
+        </el-row>
+
+        <!-- 用户端主要功能 Tabs -->
+        <div class="content-box">
+          <el-tabs v-model="userActiveTab" style="padding: 12px 16px;">
+            
+            <!-- 1. 数据总览看板 -->
+            <el-tab-pane label="📊 综合数据总览" name="dashboard">
+              <el-row :gutter="16">
+                <el-col :xs="24" :sm="14" style="margin-bottom: 16px;">
+                  <div style="font-weight: 600; font-size: 14px; margin-bottom: 10px;">
+                    📈 近 7 天能量收支 (绿: 消耗 | 蓝: 摄入)
+                  </div>
+                  <div class="trend-chart-box">
+                    <div class="trend-col" v-for="(item, idx) in userDashboard.recent_trends" :key="idx">
+                      <div class="bars-wrap">
+                        <div class="bar-burn" :style="{ height: Math.min(110, (item.burned / 6)) + 'px' }" :title="'消耗: ' + item.burned + ' kcal'"></div>
+                        <div class="bar-intake" :style="{ height: Math.min(110, (item.intake / 20)) + 'px' }" :title="'摄入: ' + item.intake + ' kcal'"></div>
+                      </div>
+                      <div class="col-date">{{ item.date }}</div>
+                    </div>
+                  </div>
+                </el-col>
+
+                <el-col :xs="24" :sm="10" style="margin-bottom: 16px;">
+                  <div style="font-weight: 600; font-size: 14px; margin-bottom: 10px;">
+                    🎯 运动偏好与近期分布
+                  </div>
+                  <div v-if="userDashboard.sport_distribution && userDashboard.sport_distribution.length > 0">
+                    <div v-for="sp in userDashboard.sport_distribution" :key="sp.sport_name" style="margin-bottom: 8px;">
+                      <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 2px;">
+                        <span>{{ sp.sport_name }} ({{ sp.count }}次)</span>
+                        <span style="color: var(--primary-dark); font-weight: 600;">{{ sp.calories }} kcal</span>
+                      </div>
+                      <el-progress :percentage="Math.min(100, sp.count * 20)" :show-text="false" stroke-width="6" color="#10b981" />
+                    </div>
+                  </div>
+                  <div v-else style="color: var(--muted); font-size: 12px; padding: 20px 0; text-align: center;">
+                    暂无运动记录，快去添加打卡吧！
+                  </div>
+                </el-col>
+              </el-row>
+
+              <!-- 最新系统公告与科普 -->
+              <div style="margin-top: 10px; border-top: 1px solid var(--border); padding-top: 14px;">
+                <div style="font-weight: 600; font-size: 14px; margin-bottom: 10px;">📢 平台健康指南与最新公告</div>
+                <div v-for="n in (userDashboard.notices || [])" :key="n.id" style="margin-bottom: 10px; padding: 10px; background: #f8fafc; border-radius: 6px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="font-weight: 600; font-size: 13px;">{{ n.title }}</span>
+                    <el-tag size="small">{{ n.tag }}</el-tag>
+                  </div>
+                  <div style="font-size: 12px; color: var(--muted); line-height: 1.5;">{{ n.content }}</div>
+                  <div style="font-size: 11px; color: #94a3b8; margin-top: 4px; text-align: right;">{{ n.author }} · {{ n.created_at }}</div>
+                </div>
+              </div>
+            </el-tab-pane>
+
+            <!-- 2. AI 运动健康分析 (任务书核心要求) -->
+            <el-tab-pane label="🤖 AI 运动健康分析" name="ai_summary">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+                <div>
+                  <span style="font-size: 15px; font-weight: 700; color: #065f46;">🤖 大模型 AI 运动总结与数据分析</span>
+                  <div style="font-size: 12px; color: var(--muted); margin-top: 2px;">
+                    根据您的阶段运动打卡流水、卡路里消耗与体征目标，生成通俗易懂的阶段性总结与日常锻炼建议
+                  </div>
+                </div>
+                <el-button type="success" :loading="generatingAi" @click="handleGenerateAiSummary">
+                  ✨ 一键生成最新 AI 运动分析
+                </el-button>
+              </div>
+
+              <!-- 当前最新 AI 分析展示卡片 -->
+              <div v-if="currentAiSummary" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 10px;">
+                  <el-tag size="small" type="success">打卡: {{ currentAiSummary.workout_count }} 次</el-tag>
+                  <el-tag size="small" type="primary">时长: {{ currentAiSummary.total_duration }} 分钟</el-tag>
+                  <el-tag size="small" type="warning">消耗: {{ currentAiSummary.total_burned }} kcal</el-tag>
+                  <span style="font-size: 12px; color: var(--muted); margin-left: auto;">生成时间: {{ currentAiSummary.created_at }}</span>
+                </div>
+                <div style="font-size: 14px; line-height: 1.8; color: #1e293b; white-space: pre-line;">
+                  {{ currentAiSummary.ai_content }}
+                </div>
+                <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #ea580c; display: flex; align-items: center; gap: 6px;">
+                  <span>⚠️</span>
+                  <span>{{ currentAiSummary.disclaimer }}</span>
+                </div>
+              </div>
+              <div v-else style="text-align: center; padding: 40px 0; color: var(--muted); font-size: 13px;">
+                暂无分析记录，点击右上角【一键生成最新 AI 运动分析】开始体验
+              </div>
+
+              <!-- 历史 AI 分析记录 -->
+              <div v-if="userAiHistory && userAiHistory.length > 1" style="margin-top: 20px;">
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">📜 历史 AI 分析建议归档</div>
+                <div class="table-responsive-box">
+                  <el-table :data="userAiHistory" stripe border style="width: 100%">
+                    <el-table-column prop="id" label="序号" width="70" align="center"></el-table-column>
+                    <el-table-column prop="summary_type" label="分析类型" width="130" align="center"></el-table-column>
+                    <el-table-column prop="workout_count" label="打卡次数" width="90" align="center"></el-table-column>
+                    <el-table-column prop="total_duration" label="总时长(分)" width="100" align="center"></el-table-column>
+                    <el-table-column prop="total_burned" label="总消耗(kcal)" width="110" align="center"></el-table-column>
+                    <el-table-column prop="created_at" label="生成时间" width="160" align="center"></el-table-column>
+                    <el-table-column label="查看内容" min-width="120" align="center">
+                      <template #default="scope">
+                        <el-button type="primary" size="small" text @click="currentAiSummary = scope.row">查看此条</el-button>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </div>
+              </div>
+            </el-tab-pane>
+
+            <!-- 3. 身体数据管理 -->
+            <el-tab-pane label="🩺 身体数据录入" name="metrics">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <span style="font-size: 14px; font-weight: 600;">身高、体重、血压、心率体征跟踪</span>
+                <el-button type="primary" size="small" @click="showAddMetricModal = true">+ 记录今日体征</el-button>
+              </div>
+
+              <div class="table-responsive-box">
+                <el-table :data="userMetrics" stripe border style="width: 100%">
+                  <el-table-column prop="record_date" label="测量日期" width="120" align="center"></el-table-column>
+                  <el-table-column prop="weight" label="体重 (kg)" width="110" align="center"></el-table-column>
+                  <el-table-column prop="height" label="身高 (cm)" width="110" align="center"></el-table-column>
+                  <el-table-column prop="bmi" label="BMI 指数" width="110" align="center">
+                    <template #default="scope">
+                      <el-tag size="small" :type="scope.row.bmi > 24 ? 'warning' : 'success'">{{ scope.row.bmi }}</el-tag>
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="血压 (高压/低压)" width="150" align="center">
+                    <template #default="scope">
+                      {{ scope.row.systolic_bp }} / {{ scope.row.diastolic_bp }} mmHg
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="heart_rate" label="静息心率 (bpm)" width="130" align="center"></el-table-column>
+                  <el-table-column prop="created_at" label="录入时间" min-width="160"></el-table-column>
+                </el-table>
+              </div>
+            </el-tab-pane>
+
+            <!-- 3. 日常运动打卡 -->
+            <el-tab-pane label="🏃 日常运动打卡" name="workouts">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <span style="font-size: 14px; font-weight: 600;">运动健身记录与热量消耗</span>
+                <el-button type="success" size="small" @click="showAddWorkoutModal = true">+ 记录新运动</el-button>
+              </div>
+
+              <div class="table-responsive-box">
+                <el-table :data="userWorkouts" stripe border style="width: 100%">
+                  <el-table-column prop="workout_date" label="日期" width="110" align="center"></el-table-column>
+                  <el-table-column prop="sport_name" label="运动项目" width="130">
+                    <template #default="scope">
+                      <el-tag size="small" type="success">{{ scope.row.sport_name }}</el-tag>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="duration_min" label="时长(分)" width="100" align="center"></el-table-column>
+                  <el-table-column prop="calories_burned" label="消耗(kcal)" width="110" align="center"></el-table-column>
+                  <el-table-column prop="distance_km" label="里程(km)" width="100" align="center"></el-table-column>
+                  <el-table-column prop="heart_rate" label="平均心率" width="100" align="center"></el-table-column>
+                  <el-table-column prop="notes" label="运动心得" min-width="180" show-overflow-tooltip></el-table-column>
+                  <el-table-column label="操作" width="90" align="center">
+                    <template #default="scope">
+                      <el-button type="danger" size="small" text @click="handleDeleteWorkout(scope.row.id)">删除</el-button>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+            </el-tab-pane>
+
+            <!-- 4. 饮食记录管理 -->
+            <el-tab-pane label="🥗 健康饮食管理" name="diets">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <span style="font-size: 14px; font-weight: 600;">分餐热量与营养摄入</span>
+                <el-button type="primary" size="small" @click="showAddDietModal = true">+ 记录饮食</el-button>
+              </div>
+
+              <div class="table-responsive-box">
+                <el-table :data="userDiets" stripe border style="width: 100%">
+                  <el-table-column prop="diet_date" label="日期" width="110" align="center"></el-table-column>
+                  <el-table-column prop="meal_type" label="餐次" width="90" align="center">
+                    <template #default="scope">
+                      <el-tag size="small" type="warning">{{ scope.row.meal_type }}</el-tag>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="food_name" label="食物名称" min-width="180"></el-table-column>
+                  <el-table-column prop="calories" label="热量(kcal)" width="110" align="center"></el-table-column>
+                  <el-table-column prop="protein" label="蛋白质(g)" width="100" align="center"></el-table-column>
+                  <el-table-column prop="carbs" label="碳水(g)" width="100" align="center"></el-table-column>
+                  <el-table-column prop="fat" label="脂肪(g)" width="100" align="center"></el-table-column>
+                  <el-table-column label="操作" width="90" align="center">
+                    <template #default="scope">
+                      <el-button type="danger" size="small" text @click="handleDeleteDiet(scope.row.id)">删除</el-button>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+            </el-tab-pane>
+
+            <!-- 5. 运动计划与打卡 -->
+            <el-tab-pane label="🎯 运动目标与计划" name="plans">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <span style="font-size: 14px; font-weight: 600;">阶段性运动目标达成进度</span>
+                <el-button type="success" size="small" @click="showAddPlanModal = true">+ 新建目标计划</el-button>
+              </div>
+
+              <el-row :gutter="14">
+                <el-col :xs="24" :sm="12" v-for="g in userPlans" :key="g.id">
+                  <div class="goal-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <span style="font-weight: 700; font-size: 15px;">{{ g.title }}</span>
+                      <el-tag size="small" :type="g.status === '已完成' ? 'success' : 'primary'">{{ g.status }}</el-tag>
+                    </div>
+                    <div style="font-size: 12px; color: var(--muted); margin: 6px 0;">
+                      目标值: {{ g.target_val }} {{ g.unit }} | 当前已完成: {{ g.current_val }} {{ g.unit }}
+                    </div>
+                    <!-- 进度条 -->
+                    <div style="margin: 12px 0 8px 0;">
+                      <el-progress :percentage="Math.min(100, Math.max(0, Math.round(g.percent || 0)))" :status="g.percent >= 100 ? 'success' : ''" :stroke-width="10" />
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                      <span style="font-size: 11px; color: #94a3b8;">截止日期: {{ g.end_date || '长期有效' }}</span>
+                      <div>
+                        <el-button size="small" type="primary" plain @click="handleOpenCheckin(g)">打卡推进</el-button>
+                        <el-button size="small" type="danger" text @click="handleDeletePlan(g.id)">删除</el-button>
+                      </div>
+                    </div>
+                  </div>
+                </el-col>
+              </el-row>
+            </el-tab-pane>
+
+            <!-- 6. 个人健康档案配置 -->
+            <el-tab-pane label="👤 个人档案设置" name="profile">
+              <div style="max-width: 600px; padding: 10px 0;">
+                <el-form label-position="top">
+                  <el-form-item label="真实姓名">
+                    <el-input v-model="profileForm.real_name" />
+                  </el-form-item>
+                  <el-row :gutter="12">
+                    <el-col :span="12">
+                      <el-form-item label="性别">
+                        <el-select v-model="profileForm.gender" style="width: 100%;">
+                          <el-option label="男" value="男" />
+                          <el-option label="女" value="女" />
+                        </el-select>
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                      <el-form-item label="年龄">
+                        <el-input-number v-model="profileForm.age" :min="10" :max="100" style="width: 100%;" />
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                  <el-row :gutter="12">
+                    <el-col :span="12">
+                      <el-form-item label="当前身高 (cm)">
+                        <el-input-number v-model="profileForm.height" :precision="1" :step="0.5" style="width: 100%;" />
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                      <el-form-item label="当前体重 (kg)">
+                        <el-input-number v-model="profileForm.weight" :precision="1" :step="0.5" style="width: 100%;" />
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                  <el-row :gutter="12">
+                    <el-col :span="12">
+                      <el-form-item label="目标体重 (kg)">
+                        <el-input-number v-model="profileForm.target_weight" :precision="1" :step="0.5" style="width: 100%;" />
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                      <el-form-item label="手机号码">
+                        <el-input v-model="profileForm.phone" />
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                  <el-button type="primary" @click="handleUpdateProfile">保存个人健康档案</el-button>
+                </el-form>
+              </div>
+            </el-tab-pane>
+
+            <!-- 7. 论文任务书技术规范 -->
+            <el-tab-pane label="📑 毕设任务书与架构对齐" name="spec">
+              <div class="spec-section">
+                <h3 style="color: #065f46; margin-bottom: 8px;">🎓 毕业设计（论文）任务书核心指标与实现对照</h3>
+                <div style="font-size: 13px; line-height: 1.8; color: #334155;">
+                  <div><b>题目</b>：个人健康运动管理平台的设计与实现</div>
+                  <div><b>技术栈要求</b>：前后端分离架构，前端使用 Vue + ElementUI，后端采用 RESTful API（SpringBoot 契约兼容），数据库采用 <b>MySQL</b> 关系型数据库。</div>
+                  <div><b>数据库架构</b>：已在 MySQL 中规范设计并运行 <code>sys_user</code>（用户与角色）、<code>body_metrics</code>（身体指标历史）、<code>workout_record</code>（运动记录）、<code>diet_record</code>（饮食分餐记录）、<code>exercise_plan</code>（运动计划与打卡）、<code>system_notice</code>（系统公告）、<code>sport_dict</code>（基础运动字典）共 7 张核心表。</div>
+                  <div><b>创新点</b>：集运动、饮食、身体数据管理于一体，能量天平与动态走势可视化，全平台手机与宽屏电脑深度自适应。</div>
+                </div>
+              </div>
+            </el-tab-pane>
+
+          </el-tabs>
+        </div>
+      </div>
+    </main>
+
+    <!-- ================= 各种业务弹窗 Modal ================= -->
+
+    <!-- 弹窗 1：登录/注册模态框 -->
+    <el-dialog v-model="showLoginModal" title="账号登录 / 注册" width="90%" style="max-width: 420px;">
+      <el-tabs v-model="loginTabName">
+        <el-tab-pane label="账号登录" name="login">
+          <el-form label-position="top">
+            <el-form-item label="用户名">
+              <el-input v-model="loginForm.username" placeholder="如 admin 或 user_alex" />
+            </el-form-item>
+            <el-form-item label="密码">
+              <el-input v-model="loginForm.password" type="password" placeholder="默认密码 123456" show-password />
+            </el-form-item>
+            <el-button type="primary" style="width: 100%; margin-top: 10px;" @click="handleManualLogin">立即登录</el-button>
+          </el-form>
+        </el-tab-pane>
+        <el-tab-pane label="新用户注册" name="register">
+          <el-form label-position="top">
+            <el-form-item label="用户名">
+              <el-input v-model="registerForm.username" placeholder="英文字母或数字" />
+            </el-form-item>
+            <el-form-item label="密码">
+              <el-input v-model="registerForm.password" type="password" placeholder="设置登录密码" show-password />
+            </el-form-item>
+            <el-form-item label="真实姓名">
+              <el-input v-model="registerForm.real_name" placeholder="您的姓名" />
+            </el-form-item>
+            <el-row :gutter="10">
+              <el-col :span="12">
+                <el-form-item label="身高 (cm)">
+                  <el-input-number v-model="registerForm.height" :precision="1" style="width: 100%;" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="体重 (kg)">
+                  <el-input-number v-model="registerForm.weight" :precision="1" style="width: 100%;" />
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-button type="success" style="width: 100%; margin-top: 10px;" @click="handleRegister">提交注册</el-button>
+          </el-form>
+        </el-tab-pane>
+      </el-tabs>
+    </el-dialog>
+
+    <!-- 弹窗 2：记录身体体征 -->
+    <el-dialog v-model="showAddMetricModal" title="录入今日身体体征" width="90%" style="max-width: 460px;">
+      <el-form label-position="top">
+        <el-row :gutter="12">
+          <el-col :span="12">
+            <el-form-item label="身高 (cm)">
+              <el-input-number v-model="metricForm.height" :precision="1" style="width: 100%;" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="体重 (kg)">
+              <el-input-number v-model="metricForm.weight" :precision="1" style="width: 100%;" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="12">
+          <el-col :span="12">
+            <el-form-item label="收缩压 (高压 mmHg)">
+              <el-input-number v-model="metricForm.systolic_bp" :min="70" :max="220" style="width: 100%;" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="舒张压 (低压 mmHg)">
+              <el-input-number v-model="metricForm.diastolic_bp" :min="40" :max="140" style="width: 100%;" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item label="静息心率 (bpm)">
+          <el-input-number v-model="metricForm.heart_rate" :min="40" :max="200" style="width: 100%;" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showAddMetricModal = false">取消</el-button>
+        <el-button type="primary" @click="handleSubmitMetric">提交保存</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 弹窗 3：记录运动打卡 -->
+    <el-dialog v-model="showAddWorkoutModal" title="添加运动健身打卡" width="90%" style="max-width: 480px;">
+      <el-form label-position="top">
+        <el-form-item label="运动项目">
+          <el-select v-model="workoutForm.sport_name" style="width: 100%;" @change="onSportSelectChange">
+            <el-option v-for="s in sportsDict" :key="s.name" :label="s.name + ' (' + s.cal_per_min + ' kcal/分)'" :value="s.name" />
+          </el-select>
+        </el-form-item>
+        <el-row :gutter="12">
+          <el-col :span="12">
+            <el-form-item label="训练时长 (分钟)">
+              <el-input-number v-model="workoutForm.duration_min" :min="1" :max="360" style="width: 100%;" @change="calcWorkoutCal" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="消耗卡路里 (kcal)">
+              <el-input-number v-model="workoutForm.calories_burned" :precision="1" style="width: 100%;" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="12">
+          <el-col :span="12">
+            <el-form-item label="运动距离 (公里, 可选)">
+              <el-input-number v-model="workoutForm.distance_km" :precision="2" :step="0.5" style="width: 100%;" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="平均心率 (bpm, 可选)">
+              <el-input-number v-model="workoutForm.heart_rate" :min="0" :max="220" style="width: 100%;" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item label="运动心得与打卡备注">
+          <el-input v-model="workoutForm.notes" placeholder="记录今天的训练状态、配速或心情" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showAddWorkoutModal = false">取消</el-button>
+        <el-button type="success" @click="handleSubmitWorkout">确认打卡</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 弹窗 4：记录饮食 -->
+    <el-dialog v-model="showAddDietModal" title="记录健康饮食摄入" width="90%" style="max-width: 480px;">
+      <el-form label-position="top">
+        <el-form-item label="餐次分类">
+          <el-radio-group v-model="dietForm.meal_type">
+            <el-radio label="早餐">早餐</el-radio>
+            <el-radio label="午餐">午餐</el-radio>
+            <el-radio label="晚餐">晚餐</el-radio>
+            <el-radio label="加餐">加餐</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="食物名称与分量">
+          <el-input v-model="dietForm.food_name" placeholder="如：煎鸡胸肉150g + 糙米饭1碗" />
+        </el-form-item>
+        <el-form-item label="总热量 (kcal)">
+          <el-input-number v-model="dietForm.calories" :precision="1" style="width: 100%;" />
+        </el-form-item>
+        <el-row :gutter="10">
+          <el-col :span="8">
+            <el-form-item label="蛋白质(g)">
+              <el-input-number v-model="dietForm.protein" :precision="1" style="width: 100%;" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="碳水化合物(g)">
+              <el-input-number v-model="dietForm.carbs" :precision="1" style="width: 100%;" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="脂肪(g)">
+              <el-input-number v-model="dietForm.fat" :precision="1" style="width: 100%;" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+      <template #footer>
+        <el-button @click="showAddDietModal = false">取消</el-button>
+        <el-button type="primary" @click="handleSubmitDiet">保存饮食记录</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 弹窗 5：新增计划目标 -->
+    <el-dialog v-model="showAddPlanModal" title="新建运动健身目标" width="90%" style="max-width: 450px;">
+      <el-form label-position="top">
+        <el-form-item label="计划标题">
+          <el-input v-model="planForm.title" placeholder="如：本月户外跑量50km" />
+        </el-form-item>
+        <el-row :gutter="12">
+          <el-col :span="12">
+            <el-form-item label="计划类型">
+              <el-select v-model="planForm.plan_type" style="width: 100%;">
+                <el-option label="跑步里程" value="跑步" />
+                <el-option label="减脂体重" value="减脂" />
+                <el-option label="打卡频次" value="打卡" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="单位">
+              <el-input v-model="planForm.unit" placeholder="如：公里、公斤、次" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="12">
+          <el-col :span="12">
+            <el-form-item label="目标值">
+              <el-input-number v-model="planForm.target_val" :precision="1" style="width: 100%;" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="当前已完成">
+              <el-input-number v-model="planForm.current_val" :precision="1" style="width: 100%;" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item label="目标截止日期">
+          <el-date-picker v-model="planForm.end_date" type="date" value-format="YYYY-MM-DD" placeholder="选择截止日期" style="width: 100%;" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showAddPlanModal = false">取消</el-button>
+        <el-button type="success" @click="handleSubmitPlan">创建目标</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 弹窗 6：目标快速打卡推进 -->
+    <el-dialog v-model="showCheckinModal" title="更新运动目标进度" width="90%" style="max-width: 400px;">
+      <div style="font-size: 13px; margin-bottom: 12px; color: var(--muted);">
+        正在打卡：<b>{{ currentCheckinPlan.title }}</b> (目标: {{ currentCheckinPlan.target_val }} {{ currentCheckinPlan.unit }})
+      </div>
+      <el-form label-position="top">
+        <el-form-item label="最新累计进度值">
+          <el-input-number v-model="checkinVal" :precision="1" :step="1" style="width: 100%;" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showCheckinModal = false">取消</el-button>
+        <el-button type="primary" @click="handleSubmitCheckin">保存进度</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 弹窗 7：管理员新增用户 -->
+    <el-dialog v-model="showAddUserModal" title="管理员新增用户" width="90%" style="max-width: 480px;">
+      <el-form label-position="top">
+        <el-row :gutter="12">
+          <el-col :span="12">
+            <el-form-item label="用户名">
+              <el-input v-model="adminUserForm.username" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="初始密码">
+              <el-input v-model="adminUserForm.password" placeholder="默认 123456" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="12">
+          <el-col :span="12">
+            <el-form-item label="真实姓名">
+              <el-input v-model="adminUserForm.real_name" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="角色分配">
+              <el-select v-model="adminUserForm.role" style="width: 100%;">
+                <el-option label="普通用户" value="USER" />
+                <el-option label="系统管理员" value="ADMIN" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="12">
+          <el-col :span="8">
+            <el-form-item label="性别">
+              <el-select v-model="adminUserForm.gender" style="width: 100%;">
+                <el-option label="男" value="男" />
+                <el-option label="女" value="女" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="身高(cm)">
+              <el-input-number v-model="adminUserForm.height" :precision="1" style="width: 100%;" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="体重(kg)">
+              <el-input-number v-model="adminUserForm.weight" :precision="1" style="width: 100%;" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item label="手机号码">
+          <el-input v-model="adminUserForm.phone" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showAddUserModal = false">取消</el-button>
+        <el-button type="primary" @click="handleSubmitAdminUser">确认添加</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 弹窗 8：管理员发布公告 -->
+    <el-dialog v-model="showAddNoticeModal" title="发布系统公告 / 健康指南" width="90%" style="max-width: 500px;">
+      <el-form label-position="top">
+        <el-form-item label="公告标题">
+          <el-input v-model="noticeForm.title" placeholder="输入清晰规范的标题" />
+        </el-form-item>
+        <el-form-item label="分类标签">
+          <el-select v-model="noticeForm.tag" style="width: 100%;">
+            <el-option label="健康科普" value="健康科普" />
+            <el-option label="平台通知" value="平台通知" />
+            <el-option label="运动指南" value="运动指南" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="公告正文内容">
+          <el-input v-model="noticeForm.content" type="textarea" :rows="4" placeholder="科普运动、饮食或平台维护内容" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showAddNoticeModal = false">取消</el-button>
+        <el-button type="primary" @click="handleSubmitAdminNotice">立即发布</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 弹窗 9：管理员新增运动字典 -->
+    <el-dialog v-model="showAddSportModal" title="新增运动字典项" width="90%" style="max-width: 420px;">
+      <el-form label-position="top">
+        <el-form-item label="运动项目名称">
+          <el-input v-model="sportForm.name" placeholder="如：登山、普拉提" />
+        </el-form-item>
+        <el-form-item label="运动分类">
+          <el-select v-model="sportForm.category" style="width: 100%;">
+            <el-option label="有氧运动" value="有氧运动" />
+            <el-option label="抗阻无氧" value="抗阻无氧" />
+            <el-option label="心肺HIIT" value="心肺HIIT" />
+            <el-option label="球类竞技" value="球类竞技" />
+            <el-option label="柔韧拉伸" value="柔韧拉伸" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="参考消耗系数 (kcal / 分钟)">
+          <el-input-number v-model="sportForm.cal_per_min" :precision="1" :step="0.5" style="width: 100%;" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showAddSportModal = false">取消</el-button>
+        <el-button type="primary" @click="handleSubmitAdminSport">保存字典项</el-button>
+      </template>
+    </el-dialog>
+
+  </div>
+
+  <!-- 引入依赖脚本 -->
+  <script src="/static/vendor/vue.global.prod.js"></script>
+  <script src="/static/vendor/element-plus.js"></script>
+  <script src="/static/vendor/element-plus-icons.js"></script>
+  <script src="/static/vendor/axios.min.js"></script>
+
+  <script>
+    const { createApp, ref, reactive, onMounted } = Vue;
+    const { ElMessage, ElMessageBox } = ElementPlus;
+
+    const app = createApp({
+      setup() {
+        // 当前登录态
+        const token = ref(localStorage.getItem('health_token') || '');
+        const currentUser = reactive({
+          id: 2,
+          username: 'user_alex',
+          real_name: '张健 (健身学员)',
+          role: 'USER',
+          height: 175.0,
+          weight: 68.5,
+          target_weight: 65.0,
+          age: 24,
+          gender: '男',
+          bmi: 22.4,
+          bmi_text: '正常标准',
+          bmi_color: 'success'
+        });
+
+        const userActiveTab = ref('dashboard');
+        const adminActiveTab = ref('users');
+
+        // 用户端数据
+        const userDashboard = reactive({
+          today_burned: 0,
+          today_duration: 0,
+          today_intake: 0,
+          net_calories: 0,
+          recent_trends: [],
+          sport_distribution: [],
+          notices: []
+        });
+        const userMetrics = ref([]);
+        const userWorkouts = ref([]);
+        const userDiets = ref([]);
+        const userPlans = ref([]);
+        const sportsDict = ref([]);
+        const currentAiSummary = ref(null);
+        const userAiHistory = ref([]);
+        const generatingAi = ref(false);
+
+        // 管理员端数据
+        const adminOverview = reactive({
+          total_users: 0,
+          total_workouts: 0,
+          total_calories_burned: 0,
+          total_diets: 0,
+          total_notices: 0
+        });
+        const adminUsers = ref([]);
+        const adminWorkouts = ref([]);
+        const adminNotices = ref([]);
+        const adminUserKeyword = ref('');
+        const loadingAdminUsers = ref(false);
+        const loadingAdminWorkouts = ref(false);
+
+        // 弹窗状态
+        const showLoginModal = ref(false);
+        const loginTabName = ref('login');
+        const showAddMetricModal = ref(false);
+        const showAddWorkoutModal = ref(false);
+        const showAddDietModal = ref(false);
+        const showAddPlanModal = ref(false);
+        const showCheckinModal = ref(false);
+        const showAddUserModal = ref(false);
+        const showAddNoticeModal = ref(false);
+        const showAddSportModal = ref(false);
+
+        // 表单对象
+        const loginForm = reactive({ username: '', password: '' });
+        const registerForm = reactive({ username: '', password: '', real_name: '', height: 175.0, weight: 68.0 });
+        const profileForm = reactive({ real_name: '', gender: '男', age: 24, height: 175.0, weight: 68.5, target_weight: 65.0, phone: '' });
+        const metricForm = reactive({ height: 175.0, weight: 68.5, systolic_bp: 120, diastolic_bp: 80, heart_rate: 72 });
+        const workoutForm = reactive({ sport_name: '户外慢跑', duration_min: 30, calories_burned: 300, distance_km: 4.5, heart_rate: 140, notes: '' });
+        const dietForm = reactive({ meal_type: '午餐', food_name: '', calories: 500, protein: 30, carbs: 60, fat: 10 });
+        const planForm = reactive({ title: '', plan_type: '跑步', target_val: 50, current_val: 0, unit: '公里', end_date: '' });
+        const currentCheckinPlan = reactive({ id: 0, title: '', target_val: 0, unit: '' });
+        const checkinVal = ref(0);
+
+        const adminUserForm = reactive({ username: '', password: '123456', real_name: '', role: 'USER', gender: '男', height: 175, weight: 68, target_weight: 65, phone: '' });
+        const noticeForm = reactive({ title: '', tag: '健康科普', content: '' });
+        const sportForm = reactive({ name: '', category: '有氧运动', cal_per_min: 8.0 });
+
+        // Axios 封装
+        const api = axios.create();
+        api.interceptors.request.use(config => {
+          if (token.value) {
+            config.headers.Authorization = `Bearer ${token.value}`;
+          }
+          return config;
+        });
+
+        // 快捷模拟登录 / 切换身份
+        const handleUserSwitch = async (cmd, silent = false) => {
+          if (cmd === 'dialog_login') {
+            showLoginModal.value = true;
+            return;
+          }
+          try {
+            const res = await axios.post('/api/auth/login', {
+              username: cmd,
+              password: '123456'
+            });
+            if (res.data.code === 0) {
+              token.value = res.data.token;
+              localStorage.setItem('health_token', token.value);
+              Object.assign(currentUser, res.data.user);
+              if (!silent) {
+                ElMessage.success({ message: `已切换为：${currentUser.real_name}`, duration: 1500 });
+              }
+              await refreshCurrentView();
+            }
+          } catch (e) {
+            if (!silent) ElMessage.error(e.response?.data?.detail || '切换登录失败');
+          }
+        };
+
+        // 真实账号密码手动登录
+        const handleManualLogin = async () => {
+          try {
+            const res = await axios.post('/api/auth/login', loginForm);
+            if (res.data.code === 0) {
+              token.value = res.data.token;
+              localStorage.setItem('health_token', token.value);
+              Object.assign(currentUser, res.data.user);
+              showLoginModal.value = false;
+              ElMessage.success(`登录成功，欢迎 ${currentUser.real_name}`);
+              await refreshCurrentView();
+            }
+          } catch (e) {
+            ElMessage.error(e.response?.data?.detail || '登录失败，请检查账号密码');
+          }
+        };
+
+        // 新用户注册
+        const handleRegister = async () => {
+          try {
+            const res = await axios.post('/api/auth/register', registerForm);
+            if (res.data.code === 0) {
+              ElMessage.success('注册成功，请切换到登录页签登录');
+              loginForm.username = registerForm.username;
+              loginTabName.value = 'login';
+            }
+          } catch (e) {
+            ElMessage.error(e.response?.data?.detail || '注册失败');
+          }
+        };
+
+        // 刷新用户端视图
+        const refreshUserView = async () => {
+          try {
+            const [pRes, dRes, mRes, wRes, dtRes, plRes, spRes] = await Promise.all([
+              api.get('/api/user/profile'),
+              api.get('/api/user/dashboard'),
+              api.get('/api/user/metrics'),
+              api.get('/api/user/workouts'),
+              api.get('/api/user/diets'),
+              api.get('/api/user/plans'),
+              api.get('/api/sports')
+            ]);
+            Object.assign(currentUser, pRes.data.data);
+            Object.assign(profileForm, pRes.data.data);
+            Object.assign(userDashboard, dRes.data.data);
+            userMetrics.value = mRes.data.data || [];
+            userWorkouts.value = wRes.data.data || [];
+            userDiets.value = dtRes.data.data || [];
+            userPlans.value = plRes.data.data || [];
+            sportsDict.value = spRes.data.data || [];
+            await fetchAiHistory();
+          } catch (e) {
+            console.error('refreshUserView error', e);
+          }
+        };
+
+        const handleGenerateAiSummary = async () => {
+          generatingAi.value = true;
+          try {
+            const res = await api.post('/api/user/ai-summary');
+            if (res.data.code === 0) {
+              currentAiSummary.value = res.data.data;
+              ElMessage.success('AI 运动健康分析生成成功！');
+              await fetchAiHistory();
+            }
+          } catch (e) {
+            ElMessage.error(e.response?.data?.detail || '生成失败');
+          } finally {
+            generatingAi.value = false;
+          }
+        };
+
+        const fetchAiHistory = async () => {
+          try {
+            const res = await api.get('/api/user/ai-summary/history');
+            userAiHistory.value = res.data.data || [];
+            if (!currentAiSummary.value && userAiHistory.value.length > 0) {
+              currentAiSummary.value = userAiHistory.value[0];
+            }
+          } catch (e) {
+            console.error(e);
+          }
+        };
+
+        // 刷新管理员端视图
+        const refreshAdminView = async () => {
+          try {
+            const [oRes, spRes] = await Promise.all([
+              api.get('/api/admin/overview'),
+              api.get('/api/sports')
+            ]);
+            Object.assign(adminOverview, oRes.data.data);
+            sportsDict.value = spRes.data.data || [];
+            await fetchAdminUsers();
+            await fetchAdminWorkouts();
+            await fetchAdminNotices();
+          } catch (e) {
+            console.error('refreshAdminView error', e);
+          }
+        };
+
+        const fetchAdminUsers = async () => {
+          loadingAdminUsers.value = true;
+          try {
+            const res = await api.get('/api/admin/users', { params: { keyword: adminUserKeyword.value } });
+            adminUsers.value = res.data.data || [];
+          } finally {
+            loadingAdminUsers.value = false;
+          }
+        };
+
+        const fetchAdminWorkouts = async () => {
+          loadingAdminWorkouts.value = true;
+          try {
+            const res = await api.get('/api/admin/workouts');
+            adminWorkouts.value = res.data.data || [];
+          } finally {
+            loadingAdminWorkouts.value = false;
+          }
+        };
+
+        const fetchAdminNotices = async () => {
+          try {
+            const res = await api.get('/api/admin/notices');
+            adminNotices.value = res.data.data || [];
+          } catch (e) {
+            console.error(e);
+          }
+        };
+
+        const refreshCurrentView = async () => {
+          if (currentUser.role === 'ADMIN') {
+            await refreshAdminView();
+          } else {
+            await refreshUserView();
+          }
+        };
+
+        // 用户提交体征
+        const handleSubmitMetric = async () => {
+          try {
+            const res = await api.post('/api/user/metrics', metricForm);
+            ElMessage.success(res.data.message || '体征录入成功');
+            showAddMetricModal.value = false;
+            await refreshUserView();
+          } catch (e) {
+            ElMessage.error(e.response?.data?.detail || '保存失败');
+          }
+        };
+
+        // 用户提交运动打卡
+        const onSportSelectChange = (val) => {
+          const found = sportsDict.value.find(s => s.name === val);
+          if (found) {
+            workoutForm.calories_burned = Math.round(found.cal_per_min * workoutForm.duration_min);
+          }
+        };
+        const calcWorkoutCal = () => {
+          const found = sportsDict.value.find(s => s.name === workoutForm.sport_name);
+          const rate = found ? found.cal_per_min : 8.0;
+          workoutForm.calories_burned = Math.round(rate * workoutForm.duration_min);
+        };
+        const handleSubmitWorkout = async () => {
+          try {
+            const res = await api.post('/api/user/workouts', workoutForm);
+            ElMessage.success(res.data.message || '运动打卡成功');
+            showAddWorkoutModal.value = false;
+            await refreshUserView();
+          } catch (e) {
+            ElMessage.error(e.response?.data?.detail || '保存失败');
+          }
+        };
+        const handleDeleteWorkout = async (id) => {
+          try {
+            await ElMessageBox.confirm('确定删除该条运动记录吗？', '提示', { type: 'warning' });
+            await api.delete(`/api/user/workouts/${id}`);
+            ElMessage.success('运动记录已删除');
+            await refreshUserView();
+          } catch (e) {}
+        };
+
+        // 饮食记录提交与删除
+        const handleSubmitDiet = async () => {
+          try {
+            const res = await api.post('/api/user/diets', dietForm);
+            ElMessage.success(res.data.message || '饮食记录添加成功');
+            showAddDietModal.value = false;
+            await refreshUserView();
+          } catch (e) {
+            ElMessage.error(e.response?.data?.detail || '保存失败');
+          }
+        };
+        const handleDeleteDiet = async (id) => {
+          try {
+            await ElMessageBox.confirm('确定删除该条饮食记录吗？', '提示', { type: 'warning' });
+            await api.delete(`/api/user/diets/${id}`);
+            ElMessage.success('饮食记录已删除');
+            await refreshUserView();
+          } catch (e) {}
+        };
+
+        // 运动计划目标相关
+        const handleSubmitPlan = async () => {
+          try {
+            const res = await api.post('/api/user/plans', planForm);
+            ElMessage.success(res.data.message || '目标计划创建成功');
+            showAddPlanModal.value = false;
+            await refreshUserView();
+          } catch (e) {
+            ElMessage.error(e.response?.data?.detail || '创建失败');
+          }
+        };
+        const handleOpenCheckin = (plan) => {
+          Object.assign(currentCheckinPlan, plan);
+          checkinVal.value = plan.current_val;
+          showCheckinModal.value = true;
+        };
+        const handleSubmitCheckin = async () => {
+          try {
+            await api.patch(`/api/user/plans/${currentCheckinPlan.id}`, { current_val: checkinVal.value });
+            ElMessage.success('目标打卡进度已更新');
+            showCheckinModal.value = false;
+            await refreshUserView();
+          } catch (e) {
+            ElMessage.error(e.response?.data?.detail || '更新失败');
+          }
+        };
+        const handleDeletePlan = async (id) => {
+          try {
+            await ElMessageBox.confirm('确定删除该运动目标吗？', '提示', { type: 'warning' });
+            await api.delete(`/api/user/plans/${id}`);
+            ElMessage.success('目标已删除');
+            await refreshUserView();
+          } catch (e) {}
+        };
+
+        // 修改个人健康档案
+        const handleUpdateProfile = async () => {
+          try {
+            const res = await api.put('/api/user/profile', profileForm);
+            ElMessage.success(res.data.message || '健康档案修改成功');
+            await refreshUserView();
+          } catch (e) {
+            ElMessage.error(e.response?.data?.detail || '修改失败');
+          }
+        };
+
+        // 管理员操作
+        const handleToggleUserStatus = async (user, val) => {
+          const newStatus = val ? 1 : 0;
+          try {
+            await api.patch(`/api/admin/users/${user.id}/status?status=${newStatus}`);
+            user.status = newStatus;
+            ElMessage.success(`用户 ${user.real_name} 账号状态已设为：${val ? '正常' : '禁用'}`);
+          } catch (e) {
+            ElMessage.error(e.response?.data?.detail || '操作失败');
+          }
+        };
+        const handleDeleteUser = async (id) => {
+          try {
+            await ElMessageBox.confirm('确定删除该用户吗？其关联的全部运动和饮食数据将级联清除！', '危险操作', { type: 'error' });
+            await api.delete(`/api/admin/users/${id}`);
+            ElMessage.success('用户已删除');
+            await fetchAdminUsers();
+          } catch (e) {}
+        };
+        const handleSubmitAdminUser = async () => {
+          try {
+            const res = await api.post('/api/admin/users', adminUserForm);
+            ElMessage.success(res.data.message || '用户新增成功');
+            showAddUserModal.value = false;
+            await fetchAdminUsers();
+          } catch (e) {
+            ElMessage.error(e.response?.data?.detail || '添加失败');
+          }
+        };
+        const handleDeleteAdminWorkout = async (id) => {
+          try {
+            await ElMessageBox.confirm('确定从全平台删除该运动打卡流水吗？', '提示', { type: 'warning' });
+            await api.delete(`/api/admin/workouts/${id}`);
+            ElMessage.success('已删除');
+            await fetchAdminWorkouts();
+          } catch (e) {}
+        };
+        const handleSubmitAdminNotice = async () => {
+          try {
+            const res = await api.post('/api/admin/notices', noticeForm);
+            ElMessage.success(res.data.message || '公告发布成功');
+            showAddNoticeModal.value = false;
+            await fetchAdminNotices();
+          } catch (e) {
+            ElMessage.error(e.response?.data?.detail || '发布失败');
+          }
+        };
+        const handleDeleteAdminNotice = async (id) => {
+          try {
+            await ElMessageBox.confirm('确定删除该公告吗？', '提示', { type: 'warning' });
+            await api.delete(`/api/admin/notices/${id}`);
+            ElMessage.success('公告已删除');
+            await fetchAdminNotices();
+          } catch (e) {}
+        };
+        const handleSubmitAdminSport = async () => {
+          try {
+            const res = await api.post('/api/admin/sports', sportForm);
+            ElMessage.success(res.data.message || '基础运动字典添加成功');
+            showAddSportModal.value = false;
+            const sRes = await api.get('/api/sports');
+            sportsDict.value = sRes.data.data || [];
+          } catch (e) {
+            ElMessage.error(e.response?.data?.detail || '添加失败');
+          }
+        };
+        const handleDeleteAdminSport = async (id) => {
+          try {
+            await ElMessageBox.confirm('确定删除该运动字典项吗？', '提示', { type: 'warning' });
+            await api.delete(`/api/admin/sports/${id}`);
+            ElMessage.success('字典项已删除');
+            const sRes = await api.get('/api/sports');
+            sportsDict.value = sRes.data.data || [];
+          } catch (e) {}
+        };
+
+        onMounted(async () => {
+          // 初始化默认模拟登录用户 张健 (静默免提示)
+          await handleUserSwitch('user_alex', true);
+          // 挂载全局便于调试
+          window.__vue_app = {
+            currentUser,
+            userDashboard,
+            adminOverview,
+            handleUserSwitch
+          };
+        });
+
+        return {
+          token,
+          currentUser,
+          userActiveTab,
+          adminActiveTab,
+          userDashboard,
+          userMetrics,
+          userWorkouts,
+          userDiets,
+          userPlans,
+          sportsDict,
+          currentAiSummary,
+          userAiHistory,
+          generatingAi,
+          handleGenerateAiSummary,
+          fetchAiHistory,
+          adminOverview,
+          adminUsers,
+          adminWorkouts,
+          adminNotices,
+          adminUserKeyword,
+          loadingAdminUsers,
+          loadingAdminWorkouts,
+          showLoginModal,
+          loginTabName,
+          showAddMetricModal,
+          showAddWorkoutModal,
+          showAddDietModal,
+          showAddPlanModal,
+          showCheckinModal,
+          showAddUserModal,
+          showAddNoticeModal,
+          showAddSportModal,
+          loginForm,
+          registerForm,
+          profileForm,
+          metricForm,
+          workoutForm,
+          dietForm,
+          planForm,
+          currentCheckinPlan,
+          checkinVal,
+          adminUserForm,
+          noticeForm,
+          sportForm,
+          handleUserSwitch,
+          handleManualLogin,
+          handleRegister,
+          fetchAdminUsers,
+          fetchAdminWorkouts,
+          fetchAdminNotices,
+          handleSubmitMetric,
+          onSportSelectChange,
+          calcWorkoutCal,
+          handleSubmitWorkout,
+          handleDeleteWorkout,
+          handleSubmitDiet,
+          handleDeleteDiet,
+          handleSubmitPlan,
+          handleOpenCheckin,
+          handleSubmitCheckin,
+          handleDeletePlan,
+          handleUpdateProfile,
+          handleToggleUserStatus,
+          handleDeleteUser,
+          handleSubmitAdminUser,
+          handleDeleteAdminWorkout,
+          handleSubmitAdminNotice,
+          handleDeleteAdminNotice,
+          handleSubmitAdminSport,
+          handleDeleteAdminSport
+        };
+      }
+    });
+
+    for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+      app.component(key, component);
+    }
+    app.use(ElementPlus);
+    app.mount('#app');
+  </script>
+</body>
+</html>
